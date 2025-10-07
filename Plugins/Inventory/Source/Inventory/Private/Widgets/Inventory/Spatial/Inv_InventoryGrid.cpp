@@ -50,8 +50,8 @@ FInv_SlotAvailabilityResult UInv_InventoryGrid::HasRoomForItem(const FInv_ItemMa
 	Result.SlotAvailabilities.Add(MoveTemp(SlotAvailability));
 
 	FInv_SlotAvailability SlotAvailability2;
-	SlotAvailability.AmountToFill = 5;
-	SlotAvailability.Index = 1;
+	SlotAvailability2.AmountToFill = 5;
+	SlotAvailability2.Index = 1;
 
 	Result.SlotAvailabilities.Add(MoveTemp(SlotAvailability2));
 	
