@@ -7,6 +7,7 @@
 #include "Types/Inv_GridTypes.h"
 #include "Inv_InventoryGrid.generated.h"
 
+struct FGameplayTag;
 struct FInv_ImageFragment;
 struct FInv_GridFragment;
 class UInv_SlottedItem;
@@ -58,7 +59,7 @@ private:
 	void SetSlottedItemImage(const UInv_SlottedItem* SlottedItem, const FInv_GridFragment* GridFragment, const FInv_ImageFragment* ImageFragment) const;
 
 	void AddSlottedItemToCanvas(const int32 Index, const FInv_GridFragment* GridFragment, UInv_SlottedItem* SlottedItem) const;
-	//update to occupied grid slot texture when we have an item in the inventory
+	//actually add the item to the inventory + update to occupied grid slot texture
 	void UpdateGridSlots(UInv_InventoryItem* NewItem, const int32 Index, bool bStackableItem, const int32 StackAmount);
 
 	//helper functions for UpdateGridSlots:
@@ -70,9 +71,27 @@ private:
 	bool HasRoomAtIndex(const UInv_GridSlot* GridSlot,
 		const FIntPoint& Dimensions,
 		const TSet<int32>& CheckedIndices,
-		TSet<int32>& OutTentativelyClaimed);
-	bool CheckSlotConstraints(const UInv_GridSlot* SubGridSlot, const TSet<int32>& CheckedIndices, TSet<int32>& OutTentativelyClaimed) const;
+		TSet<int32>& OutTentativelyClaimed,
+		const FGameplayTag& ItemType,
+		const int32 MaxStackSize);
+	//Checking for slot constraints -
+	//Upper left grid slot - is the first grid slot for this ForEach2D iteration
+	//SubGridSlot - is one of the grid slots in this ForEach2D iteration that this item should occupy, be it placed in this position
+	bool CheckSlotConstraints(const UInv_GridSlot* UpperLeftGridSlot,
+								const UInv_GridSlot* SubGridSlot,
+								const TSet<int32>& CheckedIndices,
+								TSet<int32>& OutTentativelyClaimed,
+								const FGameplayTag& ItemType,
+								const int32 MaxStackSize) const;
 	bool HasValidItem(const UInv_GridSlot* GridSlot) const;
+	bool IsUpperLeftGridSlot(const UInv_GridSlot* GridSlot, const UInv_GridSlot* SubGridSlot) const;
+	bool DoesItemTypeMatch(const UInv_InventoryItem* SubItem, const FGameplayTag& ItemType) const;
+	bool IsInGridBounds(const int32 StartIndex, const FIntPoint& ItemDimensions);
+	int32 DetermineFillAmountForSlot(const bool bStackable,
+									const int32 MaxStackSize,
+									const int32 AmountToFill,
+									const UInv_GridSlot* GridSlot) const;
+	int32 GetStackAmount(const UInv_GridSlot* GridSlot) const;
 	
 	bool MatchesCategory(const UInv_InventoryItem* Item) const;
 	FVector2D GetDrawSize(const FInv_GridFragment* GridFragment) const;

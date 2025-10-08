@@ -5,6 +5,7 @@
 
 #include "Inv_FastArray.generated.h"
 
+struct FGameplayTag;
 class UInv_ItemComponent;
 class UInv_InventoryComponent;
 class UInv_InventoryItem;
@@ -41,7 +42,6 @@ public:
 	TArray<UInv_InventoryItem*> GetAllInventoryItems() const;
 
 	//~Begin FFastArraySerializer contract
-	
 	//Automatically called on the client when the item has been removed
 	void PreReplicatedRemove(const TArrayView<int32> RemovedIndices, int32 FinalSize);
 
@@ -57,6 +57,8 @@ public:
 	UInv_InventoryItem* AddEntry(UInv_InventoryItem* InventoryItem);
 	void RemoveEntry(UInv_InventoryItem* InventoryItem);
 	//~End FFastArraySerializer contract
+
+	UInv_InventoryItem* FindFirstItemByTag(const FGameplayTag& ItemType);
 	
 private:
 	friend UInv_InventoryComponent;

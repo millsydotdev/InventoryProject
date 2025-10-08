@@ -7,7 +7,7 @@
 #include "Blueprint/UserWidget.h"
 #include "Inv_SlottedItem.generated.h"
 
-//Data Accessor for creating getter and setter 
+//Data Accessor macro for creating getter and setter 
 #define DATA_ACCESSOR(type, parameter) \
 	type Get##parameter() const {return parameter; } \
 	void Set##parameter(type In##parameter) {parameter = In##parameter; }
