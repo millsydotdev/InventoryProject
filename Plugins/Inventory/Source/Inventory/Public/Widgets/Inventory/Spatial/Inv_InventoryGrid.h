@@ -95,6 +95,9 @@ private:
 	
 	bool MatchesCategory(const UInv_InventoryItem* Item) const;
 	FVector2D GetDrawSize(const FInv_GridFragment* GridFragment) const;
+
+	UFUNCTION()
+	void AddStacks(FInv_SlotAvailabilityResult& Result);
 	
 	TWeakObjectPtr<UInv_InventoryComponent> InventoryComponent;
 	

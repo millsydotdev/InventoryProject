@@ -8,10 +8,12 @@
 #include "Inv_InventoryComponent.generated.h"
 
 
+struct FInv_SlotAvailabilityResult;
 class UInv_ItemComponent;
 class UInv_InventoryItem;
 class UInv_InventoryBase;
 
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FStackChange, FInv_SlotAvailabilityResult&, Result);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FInventoryItemChange, UInv_InventoryItem*, Item);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FNoRoomInInventory);
 
@@ -44,6 +46,7 @@ public:
 	FInventoryItemChange OnInventoryItemAdded;
 	FInventoryItemChange OnInventoryItemRemoved;
 	FNoRoomInInventory NoRoomInInventory;
+	FStackChange OnStackChange;
 	
 protected:
 	// Called when the game starts

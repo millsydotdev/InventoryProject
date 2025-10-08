@@ -33,6 +33,10 @@ struct INVENTORY_API FInv_ItemManifest
 	requires std::derived_from<FragmentType, FInv_ItemFragment>
 	const FragmentType* GetFragmentOfType() const;
 
+	template<typename FragmentType>
+	requires std::derived_from<FragmentType, FInv_ItemFragment>
+	FragmentType* GetFragmentOfTypeMutable();
+
 private:
 	UPROPERTY(EditAnywhere, Category = "Inventory", meta = (ExcludeBaseStruct))
 	TArray<TInstancedStruct<FInv_ItemFragment>> Fragments;
@@ -65,6 +69,19 @@ const FragmentType* FInv_ItemManifest::GetFragmentOfType() const
 	for (const TInstancedStruct<FInv_ItemFragment>& Fragment : Fragments)
 	{
 		if (const FragmentType* FragmentPtr = Fragment.GetPtr<FragmentType>())
+		{
+			return FragmentPtr;
+		}
+	}
+	return nullptr;
+}
+
+template <typename FragmentType> requires std::derived_from<FragmentType, FInv_ItemFragment>
+FragmentType* FInv_ItemManifest::GetFragmentOfTypeMutable()
+{
+	for (TInstancedStruct<FInv_ItemFragment>& Fragment : Fragments)
+	{
+		if (FragmentType* FragmentPtr = Fragment.GetMutablePtr<FragmentType>())
 		{
 			return FragmentPtr;
 		}
