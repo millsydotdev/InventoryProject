@@ -6,6 +6,12 @@
 #include "Blueprint/UserWidget.h"
 #include "Inv_GridSlot.generated.h"
 
+//Data Accessor macro for creating getter and setter 
+#define DATA_ACCESSOR(type, parameter) \
+	type Get##parameter() const {return parameter; } \
+	void Set##parameter(type In##parameter) {parameter = In##parameter; }
+
+class UInv_InventoryItem;
 class UImage;
 
 UENUM(BlueprintType)
@@ -25,14 +31,29 @@ class INVENTORY_API UInv_GridSlot : public UUserWidget
 {
 	GENERATED_BODY()
 public:
-	void SetTileIndex(int32 InNewIndex) {TileIndex = InNewIndex;}
-	int32 GetTileIndex() const {return TileIndex;}
-
-	EInv_GridSlotState GetGridSlotState() const { return GridSlotState; };
+	DATA_ACCESSOR(int32, TileIndex);
+	DATA_ACCESSOR(int32, StackCount);
+	DATA_ACCESSOR(int32, UpperLeftIndex);
+	DATA_ACCESSOR(bool, bIsAvailable);
+	
 	void SetGridSlotState(const EInv_GridSlotState InNewState);
+	
+	TWeakObjectPtr<UInv_InventoryItem> GetInventoryItem() const { return InventoryItem; }
+	void SetInventoryItem(UInv_InventoryItem* Item);
 
 private:
 	int32 TileIndex;
+	int32 StackCount;
+	int32 UpperLeftIndex{INDEX_NONE};
+	TWeakObjectPtr<UInv_InventoryItem> InventoryItem;
+
+	bool bIsAvailable;
+
+	UPROPERTY(EditDefaultsOnly, Category="Style")
+	TMap<EInv_GridSlotState, FSlateBrush> StateBrushes;
+	
+	//current grid slot state
+	EInv_GridSlotState GridSlotState;
 	
 	//******* Bound Widgets *******//
 	UPROPERTY(meta = (BindWidget))
@@ -40,11 +61,5 @@ private:
 
 	
 	//******* Bound Widgets *******//
-
-	UPROPERTY(EditDefaultsOnly, Category="Style")
-	TMap<EInv_GridSlotState, FSlateBrush> StateBrushes;
-	
-	//current grid slot state
-	EInv_GridSlotState GridSlotState;
 	
 };

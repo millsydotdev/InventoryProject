@@ -38,12 +38,14 @@ private:
 	void ConstructGrid();
 	
 	FInv_SlotAvailabilityResult HasRoomForItem(const UInv_InventoryItem* Item);
+
+	//Does the heavy lifting
 	FInv_SlotAvailabilityResult HasRoomForItem(const FInv_ItemManifest& ItemManifest);
 
 	void AddItemToIndices(const FInv_SlotAvailabilityResult& Result, UInv_InventoryItem* NewItem);
 	void AddItemAtIndex(UInv_InventoryItem* Item, const int32 Index, const bool bStackable, const int32 StackAmount);
 
-	//create widget to add to the grid and set it's properties
+	//create widget to add to the grid and set its properties
 	UInv_SlottedItem* CreateSlottedItem(
 		UInv_InventoryItem* Item,
 		const bool bStackable,
@@ -57,7 +59,20 @@ private:
 
 	void AddSlottedItemToCanvas(const int32 Index, const FInv_GridFragment* GridFragment, UInv_SlottedItem* SlottedItem) const;
 	//update to occupied grid slot texture when we have an item in the inventory
-	void UpdateGridSlots(UInv_InventoryItem* NewItem, const int32 Index);
+	void UpdateGridSlots(UInv_InventoryItem* NewItem, const int32 Index, bool bStackableItem, const int32 StackAmount);
+
+	//helper functions for UpdateGridSlots:
+	bool IsIndexClaimed(const TSet<int32>& CheckedIndices, const int32 Index) const;
+	FIntPoint GetItemDimensions(const FInv_ItemManifest& ItemManifest) const;
+	//HasRoomAtIndex checks slot constraints for each square in the two-dimensional range covered
+	//by this item. If it finds any that fail check slot constraints, then it returns false,
+	//and OutTentativelyClaimed will never be used.
+	bool HasRoomAtIndex(const UInv_GridSlot* GridSlot,
+		const FIntPoint& Dimensions,
+		const TSet<int32>& CheckedIndices,
+		TSet<int32>& OutTentativelyClaimed);
+	bool CheckSlotConstraints(const UInv_GridSlot* SubGridSlot, const TSet<int32>& CheckedIndices, TSet<int32>& OutTentativelyClaimed) const;
+	bool HasValidItem(const UInv_GridSlot* GridSlot) const;
 	
 	bool MatchesCategory(const UInv_InventoryItem* Item) const;
 	FVector2D GetDrawSize(const FInv_GridFragment* GridFragment) const;

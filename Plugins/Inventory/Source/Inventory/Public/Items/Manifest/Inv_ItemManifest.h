@@ -29,6 +29,10 @@ struct INVENTORY_API FInv_ItemManifest
 	requires std::derived_from<FragmentType, FInv_ItemFragment>
 	const FragmentType* GetFragmentOfTypeByTag(UPARAM(meta = (Categories = "FragmentTags")) const FGameplayTag& Tag) const;
 
+	template<typename FragmentType>
+	requires std::derived_from<FragmentType, FInv_ItemFragment>
+	const FragmentType* GetFragmentOfType() const;
+
 private:
 	UPROPERTY(EditAnywhere, Category = "Inventory", meta = (ExcludeBaseStruct))
 	TArray<TInstancedStruct<FInv_ItemFragment>> Fragments;
@@ -49,6 +53,19 @@ const FragmentType* FInv_ItemManifest::GetFragmentOfTypeByTag(const FGameplayTag
 		if (const FragmentType* FragmentPtr = Fragment.GetPtr<FragmentType>())
 		{
 			if (!FragmentPtr->GetFragmentTag().MatchesTagExact(Tag)) continue;
+			return FragmentPtr;
+		}
+	}
+	return nullptr;
+}
+
+template <typename FragmentType> requires std::derived_from<FragmentType, FInv_ItemFragment>
+const FragmentType* FInv_ItemManifest::GetFragmentOfType() const
+{
+	for (const TInstancedStruct<FInv_ItemFragment>& Fragment : Fragments)
+	{
+		if (const FragmentType* FragmentPtr = Fragment.GetPtr<FragmentType>())
+		{
 			return FragmentPtr;
 		}
 	}

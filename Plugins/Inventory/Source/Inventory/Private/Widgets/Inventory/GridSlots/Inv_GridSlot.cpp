@@ -2,7 +2,7 @@
 
 
 #include "Widgets/Inventory/GridSlots/Inv_GridSlot.h"
-
+#include "Items/Inv_InventoryItem.h"
 #include "IAutomationReport.h"
 #include "Components/Image.h"
 
@@ -19,4 +19,9 @@ void UInv_GridSlot::SetGridSlotState(const EInv_GridSlotState InNewState)
 		ensureMsgf(false, TEXT("Missing brush for %s"),
 		  *UEnum::GetValueAsString(InNewState));
 	}
+}
+
+void UInv_GridSlot::SetInventoryItem(UInv_InventoryItem* Item)
+{
+	InventoryItem = Item;
 }
