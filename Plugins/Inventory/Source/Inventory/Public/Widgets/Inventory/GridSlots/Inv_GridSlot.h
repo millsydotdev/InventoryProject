@@ -58,8 +58,6 @@ private:
 	//******* Bound Widgets *******//
 	UPROPERTY(meta = (BindWidget))
 	TObjectPtr<UImage> Image_GridSlot;
-
-	
 	//******* Bound Widgets *******//
 	
 };

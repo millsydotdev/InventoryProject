@@ -17,6 +17,9 @@ class UInv_InventoryItem;
 class UImage;
 class UTextBlock;
 
+//delegate to subscribe to in the inventory grid, when we need to determine what item has been clicked to move it around in the inventory.
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FSlottedItemClicked, int32, GridIndex, const FPointerEvent&, MouseEvent);
+
 /**
  * Widget that gets displayed as an item in the inventory.
  */
@@ -26,6 +29,10 @@ class INVENTORY_API UInv_SlottedItem : public UUserWidget
 	GENERATED_BODY()
 	
 public:
+	//~Begin UUserWidget Interface
+	virtual FReply NativeOnMouseButtonDown(const FGeometry& InGeometry, const FPointerEvent& InMouseEvent) override;
+	//~End UUserWidget Interface
+	
 	DATA_ACCESSOR(bool, bIsStackable);
 	DATA_ACCESSOR(int32, GridIndex);
 	DATA_ACCESSOR(FIntPoint, GridDimensions);
@@ -38,6 +45,8 @@ public:
 	void SetImageBrush(const FSlateBrush& Brush) const;
 
 	void UpdateStackCountText(int32 StackCount);
+
+	FSlottedItemClicked OnSlottedItemClicked;
 
 private:
 	//******* Bound Widgets *******//

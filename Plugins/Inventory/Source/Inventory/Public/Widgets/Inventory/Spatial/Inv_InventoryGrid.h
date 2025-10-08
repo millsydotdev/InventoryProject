@@ -7,6 +7,7 @@
 #include "Types/Inv_GridTypes.h"
 #include "Inv_InventoryGrid.generated.h"
 
+class UInv_HoverItem;
 struct FGameplayTag;
 struct FInv_ImageFragment;
 struct FInv_GridFragment;
@@ -98,6 +99,18 @@ private:
 
 	UFUNCTION()
 	void AddStacks(FInv_SlotAvailabilityResult& Result);
+
+	UFUNCTION()
+	void OnSlottedItemClicked(int32 GridIndex, const FPointerEvent& MouseEvent);
+	
+	bool IsLeftMouseClick(const FPointerEvent& MouseEvent) const;
+	bool IsRightMouseClick(const FPointerEvent& MouseEvent) const;
+
+	//On item clicked with left mouse button - Assign the hover item and remove the slotted item from the grid
+	void PickUp(UInv_InventoryItem* ClickedInventoryItem, const int32 GridIndex);
+	void AssignHoverItem(UInv_InventoryItem* InventoryItem);
+	void AssignHoverItem(UInv_InventoryItem* InventoryItem, const int32 GridIndex, const int32 PreviousGridIndex);
+	void RemoveItemFromGrid(UInv_InventoryItem* InventoryItem, const int32 GridIndex);
 	
 	TWeakObjectPtr<UInv_InventoryComponent> InventoryComponent;
 	
@@ -116,6 +129,12 @@ private:
 	
 	UPROPERTY(EditAnywhere, Category = "Inventory")
 	TSubclassOf<UInv_SlottedItem> SlottedItemClass;
+
+	UPROPERTY()
+	TObjectPtr<UInv_HoverItem> HoverItem;
+
+	UPROPERTY(EditAnywhere, Category = "Inventory")
+	TSubclassOf<UInv_HoverItem> HoverItemClass;
 
 	//inventory items widgets
 	//index will help us to move, remove things, etc.
