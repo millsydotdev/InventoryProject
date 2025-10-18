@@ -16,7 +16,7 @@
 
 ## About The Project
 
-<strong>InventoryProject</strong> is currently in development. It contains a modular inventory system plugin for Unreal Engine.
+<strong>InventoryProject</strong> is currently in development. It contains a modular inventory system plugin for Unreal Engine (current engine version - 5.6).
 
 System contains:
 - Spatial inventory grids and the ability to switch between multiple grids in the inventory to house items of different categories (Equippable, Consumable, and Craftable);
