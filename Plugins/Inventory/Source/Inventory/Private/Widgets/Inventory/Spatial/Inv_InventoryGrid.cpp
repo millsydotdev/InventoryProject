@@ -105,6 +105,23 @@ void UInv_InventoryGrid::ChangeHoverType(const int32 Index, const FIntPoint& Dim
 	LastHighlightedGridIndex = Index;
 }
 
+void UInv_InventoryGrid::ClearHoverItem()
+{
+	if (!IsValid(HoverItem)) return;
+
+	HoverItem->SetInventoryItem(nullptr);
+	HoverItem->SetIsStackable(false);
+	HoverItem->SetGridIndex(INDEX_NONE);
+	HoverItem->UpdateStackCount(0);
+	static FSlateBrush EmptyBrush = static_cast<FSlateBrush>(FSlateNoResource());
+	HoverItem->SetImageBrush(EmptyBrush);
+
+	HoverItem->RemoveFromParent();
+	HoverItem = nullptr;
+
+	//TODO: Show mouse cursor
+}
+
 void UInv_InventoryGrid::UpdateTileParameters(const FVector2D CanvasPosition, const FVector2D MousePosition)
 {
 	if (!bMouseWithinCanvas) return;
@@ -759,7 +776,10 @@ void UInv_InventoryGrid::OnGridSlotClicked(int32 GridIndex, const FPointerEvent&
 	auto GridSlot = GridSlots[ItemDropIndex];
 	if (!GridSlot->GetInventoryItem().IsValid())
 	{
-		//TODO: Put item down at this index.
+		//Put item down at this index.
+		AddItemAtIndex(HoverItem->GetInventoryItem(), ItemDropIndex, HoverItem->IsStackable(), HoverItem->GetStackCount());
+		UpdateGridSlots(HoverItem->GetInventoryItem(), ItemDropIndex, HoverItem->IsStackable(), HoverItem->GetStackCount());
+		ClearHoverItem();
 	}
 	
 }

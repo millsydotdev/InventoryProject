@@ -36,6 +36,7 @@ public:
 	void HighlightSlots(const int32 Index, const FIntPoint& Dimensions);
 	void UnHighlightSlots(const int32 Index, const FIntPoint& Dimensions);
 	void ChangeHoverType(const int32 Index, const FIntPoint& Dimensions, EInv_GridSlotState GridSlotState);
+	void ClearHoverItem();
 	
 	//update TileParameters and LastTileParameters
 	void UpdateTileParameters(const FVector2D CanvasPosition, const FVector2D MousePosition);
