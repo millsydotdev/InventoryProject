@@ -43,6 +43,7 @@ public:
 	bool ShouldSwapStackCounts(const int32 RoomInClickedSlot, const int32 HoveredStackCount, const int32 MaxStackSize) const;
 	void SwapStackCounts(const int32 ClickedStackCount, const int32 HoveredStackCount, const int32 Index);
 	void ConsumeHoverItemStacks(const int32 ClickedStackCount, const int32 HoveredStackCount, const int32 Index);
+	void FillInStack(const int32 FillAmount, const int32 Remainder, const int32 Index);
 	
 	void SetMouseCursorWidgetByVisibilityType(const EInv_MouseCursorVisibilityType& MouseCursor);
 
