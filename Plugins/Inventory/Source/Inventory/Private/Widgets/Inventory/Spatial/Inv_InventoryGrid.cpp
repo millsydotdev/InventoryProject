@@ -423,7 +423,7 @@ FInv_SlotAvailabilityResult UInv_InventoryGrid::HasRoomForItem(const FInv_ItemMa
 		//is it not out of bound of the grid? Prevents adding the items that can stick out of the grid
 		if (!IsInGridBounds(GridSlot->GetTileIndex(), GetItemDimensions(ItemManifest))) continue;
 		
-		//can item fit here? 
+		//can item fit here?
 		//TentativelyClaimed - collection of indices that may be claimed.
 		TSet<int32> TentativelyClaimed;
 		if (!HasRoomAtIndex(GridSlot, GetItemDimensions(ItemManifest), CheckedIndices, TentativelyClaimed, ItemManifest.GetItemType(), MaxStackSize))
@@ -916,11 +916,12 @@ void UInv_InventoryGrid::OnGridSlotClicked(int32 GridIndex, const FPointerEvent&
 		return;
 	}
 
-	//if there is no valid item at this index
+	//if we can place item here (not out of grid bounds) & if there is no valid item at this index
+	if (!IsInGridBounds(ItemDropIndex, HoverItem->GetGridDimensions())) return;
 	auto GridSlot = GridSlots[ItemDropIndex];
 	if (!GridSlot->GetInventoryItem().IsValid())
 	{
-		//Put item down at this index.
+		//Put item down at this index and clear hover.
 		AddItemAtIndex(HoverItem->GetInventoryItem(), ItemDropIndex, HoverItem->IsStackable(), HoverItem->GetStackCount());
 		UpdateGridSlots(HoverItem->GetInventoryItem(), ItemDropIndex, HoverItem->IsStackable(), HoverItem->GetStackCount());
 		ClearHoverItem();
