@@ -36,6 +36,11 @@ public:
 	void Server_AddNewItem(UInv_ItemComponent* ItemComponent, int32 StackCount);
 
 	UFUNCTION(Server, Reliable) //reliable - guaranteed to hit the server
+	void Server_DropItem(UInv_InventoryItem* Item, int32 StackCount);
+	
+	void SpawnDroppedItem(UInv_InventoryItem* Item, int32 StackCount);
+
+	UFUNCTION(Server, Reliable) //reliable - guaranteed to hit the server
 	void Server_AddStacksToItem(UInv_ItemComponent* ItemComponent, int32 StackCount, int32 Remainder);
 
 	void ToggleInventoryMenu();
@@ -65,8 +70,13 @@ private:
 	UPROPERTY()
 	TObjectPtr<UInv_InventoryBase> InventoryMenu;
 
+	//Class for a widget created in Construct Inventory
 	UPROPERTY(EditAnywhere, Category = "Inventory")
 	TSubclassOf<UInv_InventoryBase> InventoryMenuClass;
+
+	//Not standardised to allow for different pickup classes for different projects.
+	UPROPERTY(EditAnywhere, Category = "Inventory")
+	TSubclassOf<AActor> PickupActorClass;
 
 	bool bInventoryMenuOpen;
 	void OpenInventoryMenu();

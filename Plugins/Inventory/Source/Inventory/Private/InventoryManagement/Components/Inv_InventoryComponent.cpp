@@ -54,6 +54,36 @@ void UInv_InventoryComponent::TryAddItem(UInv_ItemComponent* ItemComponent)
 	}
 }
 
+void UInv_InventoryComponent::Server_DropItem_Implementation(UInv_InventoryItem* Item, int32 StackCount)
+{
+	//take care of inventory data structure
+	const int32 NewStackCount = Item->GetTotalStackCount() - StackCount;
+	if (NewStackCount <= 0)
+	{
+		InventoryList.RemoveEntry(Item);
+	}
+	else
+	{
+		Item->SetTotalStackCount(NewStackCount);
+	}
+
+	//spawn dropped item
+	SpawnDroppedItem(Item, StackCount);
+}
+
+void UInv_InventoryComponent::SpawnDroppedItem(UInv_InventoryItem* Item, int32 StackCount)
+{
+	const APawn* OwningPawn = OwningPlayerController->GetPawn();
+	FVector RotatedForward;
+	RotatedForward = OwningPawn->GetActorForwardVector();
+	RotatedForward = RotatedForward.RotateAngleAxis(FMath::RandRange(-38, 38), FVector::UpVector);
+
+	FVector SpawnLocation = OwningPawn->GetActorLocation() + RotatedForward * FMath::RandRange(100, 150);
+	SpawnLocation.Z+=50.f;
+
+	
+}
+
 void UInv_InventoryComponent::Server_AddNewItem_Implementation(UInv_ItemComponent* ItemComponent, int32 StackCount)
 {
 	//add Item to Fast Array Serializer
@@ -88,8 +118,6 @@ void UInv_InventoryComponent::Server_AddStacksToItem_Implementation(UInv_ItemCom
 		StackableFragment->SetStackCount(Remainder);
 	}
 }
-
-
 
 void UInv_InventoryComponent::ToggleInventoryMenu()
 {

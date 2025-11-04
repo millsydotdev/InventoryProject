@@ -15,6 +15,7 @@
 #include "Widgets/Inventory/GridSlots/Inv_GridSlot.h"
 #include "Widgets/Inventory/HoverItem/Inv_HoverItem.h"
 #include "Widgets/Inventory/SlottedItems/Inv_SlottedItem.h"
+#include "Widgets/Popup/Inv_ItemPopUp.h"
 #include "Widgets/Utils/Inv_WidgetUtils.h"
 
 void UInv_InventoryGrid::NativeOnInitialized()
@@ -26,6 +27,7 @@ void UInv_InventoryGrid::NativeOnInitialized()
 	InventoryComponent = UInv_InventoryStatics::GetInventoryComponent(GetOwningPlayer());
 	InventoryComponent->OnInventoryItemAdded.AddDynamic(this, &ThisClass::AddItem);
 	InventoryComponent->OnStackChange.AddDynamic(this, &ThisClass::AddStacks);
+	
 }
 
 void UInv_InventoryGrid::NativeTick(const FGeometry& MyGeometry, float DeltaTime)
@@ -480,6 +482,11 @@ void UInv_InventoryGrid::AddItem(UInv_InventoryItem* Item)
 	AddItemToIndices(Result, Item);
 }
 
+void UInv_InventoryGrid::SetOwningCanvasPanel(UCanvasPanel* InCanvasPanel)
+{
+	OwningCanvasPanel = InCanvasPanel;
+}
+
 void UInv_InventoryGrid::AddItemToIndices(const FInv_SlotAvailabilityResult& Result, UInv_InventoryItem* NewItem)
 {
 	for (const auto& Availability : Result.SlotAvailabilities)
@@ -750,7 +757,13 @@ void UInv_InventoryGrid::OnSlottedItemClicked(int32 GridIndex, const FPointerEve
 		PickUp(ClickedInventoryItem, GridIndex);
 		return;
 	}
-
+	
+	if (IsRightMouseClick(MouseEvent))
+	{
+		CreateItemPopup(GridIndex);
+		return;
+	}
+	
 	//Do the hovered item and the clicked inventory item share a type, and are they stackable?
 	if (IsSameStackable(ClickedInventoryItem))
 	{
@@ -790,8 +803,102 @@ void UInv_InventoryGrid::OnSlottedItemClicked(int32 GridIndex, const FPointerEve
 		}
 	}
 	
-	//Swap with the hover item.
-	SwapWithHoverItem(ClickedInventoryItem, GridIndex);
+	// Make sure wee can swap with a valid item 
+	if (CurrentSpaceQueryResult.ValidItem.IsValid())
+	{
+		// Swap with the hover item.
+		SwapWithHoverItem(ClickedInventoryItem, GridIndex);
+	}
+}
+
+void UInv_InventoryGrid::CreateItemPopup(const int32 GridIndex)
+{
+	UInv_InventoryItem* RightClickedItem = GridSlots[GridIndex]->GetInventoryItem().Get();
+	if (!IsValid(RightClickedItem)) return;
+
+	//if item popup is already created - destroy the old one
+	if (IsValid(ItemPopup))
+	{
+		ItemPopup->RemoveFromParent();
+	}
+
+	//add item popup to the canvas panel of the owning spatial inventory's canvas panel
+	ItemPopup = CreateWidget<UInv_ItemPopUp>(this, ItemPopupClass);
+	ItemPopup->SetGridIndex(GridIndex);
+	OwningCanvasPanel->AddChildToCanvas(ItemPopup);
+	UCanvasPanelSlot* CanvasSlot = UWidgetLayoutLibrary::SlotAsCanvasSlot(ItemPopup);
+	const FVector2D MousePos = UWidgetLayoutLibrary::GetMousePositionOnViewport(GetOwningPlayer()) + FVector2D(-20, -20); //slight offset 
+	CanvasSlot->SetPosition(MousePos);
+	CanvasSlot->SetSize(ItemPopup->GetBoxSize());
+
+	const int32 SliderMax = GridSlots[GridIndex]->GetStackCount() - 1;
+	if (RightClickedItem->IsStackable() && SliderMax > 0)
+	{
+		ItemPopup->OnSplit.BindDynamic(this, &ThisClass::OnPopupMenuSplit);
+		
+		if (SliderMax > 1)
+		{
+			ItemPopup->SetSliderParams(SliderMax, FMath::Max(1, GridSlots[GridIndex]->GetStackCount() / 2));
+		}
+		else
+		{
+			ItemPopup->CollapseSplitSlider();
+		}
+		
+	}
+	else
+	{
+		ItemPopup->CollapseSplitButton();
+		ItemPopup->CollapseSplitSlider();
+	}
+	
+	ItemPopup->OnDrop.BindDynamic(this, &ThisClass::OnPopupMenuDrop);
+
+	if (RightClickedItem->GetItemManifest().GetItemCategory() == EInv_ItemCategory::Consumable)
+	{
+		ItemPopup->OnConsume.BindDynamic(this, &ThisClass::OnPopupMenuConsume);
+	}
+	else
+	{
+		ItemPopup->CollapseConsumeButton();
+	}
+	
+}
+
+void UInv_InventoryGrid::OnPopupMenuSplit(int32 SplitAmount, int32 Index)
+{
+	UInv_InventoryItem* SplitItem = GridSlots[Index]->GetInventoryItem().Get();
+	if (!IsValid(SplitItem)) return;
+	if (!SplitItem->IsStackable()) return;
+
+	const int32 UpperLeftIndex = GridSlots[Index]->GetUpperLeftIndex();
+	UInv_GridSlot* UpperLeftGridSlot = GridSlots[UpperLeftIndex];
+
+	const int32 StackCount = UpperLeftGridSlot->GetStackCount();
+	const int32 NewStackCount = StackCount - SplitAmount;
+
+	UpperLeftGridSlot->SetStackCount(NewStackCount);
+	SlottedItems.FindChecked(UpperLeftIndex)->UpdateStackCountText(NewStackCount);
+	
+	AssignHoverItem(SplitItem, UpperLeftIndex, UpperLeftIndex);
+	HoverItem->UpdateStackCount(SplitAmount);
+}
+
+void UInv_InventoryGrid::OnPopupMenuDrop(int32 Index)
+{
+	UInv_InventoryItem* RightClickedItem = GridSlots[Index]->GetInventoryItem().Get();
+	if (!IsValid(RightClickedItem)) return;
+
+	//Assign item at this grid index to hover item, then call drop on server and then remove the hover item.
+	
+	
+	PickUp(RightClickedItem, Index);
+	DropItem();
+}
+
+void UInv_InventoryGrid::OnPopupMenuConsume(int32 Index)
+{
+	
 }
 
 bool UInv_InventoryGrid::IsLeftMouseClick(const FPointerEvent& MouseEvent) const
@@ -868,6 +975,17 @@ void UInv_InventoryGrid::RemoveItemFromGrid(UInv_InventoryItem* InventoryItem, c
 		SlottedItems.RemoveAndCopyValue(GridIndex, FoundSlottedItem);
 		FoundSlottedItem->RemoveFromParent();
 	}
+}
+
+void UInv_InventoryGrid::DropItem()
+{
+	if (!IsValid(HoverItem)) return;
+	if (!IsValid(HoverItem->GetInventoryItem())) return;
+
+	//TODO: Tell the server to actually drop the item
+	//Clear hover item
+
+	ClearHoverItem();
 }
 
 void UInv_InventoryGrid::ConstructGrid()

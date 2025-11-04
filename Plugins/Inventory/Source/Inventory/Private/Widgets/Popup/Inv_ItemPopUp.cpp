@@ -34,8 +34,13 @@ int32 UInv_ItemPopUp::GetSplitAmount() const
 void UInv_ItemPopUp::CollapseSplitButton() const
 {
 	Button_Split->SetVisibility(ESlateVisibility::Collapsed);
+}
+
+void UInv_ItemPopUp::CollapseSplitSlider() const
+{
 	Slider_Split->SetVisibility(ESlateVisibility::Collapsed);
 	Text_SplitAmount->SetVisibility(ESlateVisibility::Collapsed);
+	Slider_Split->GetParent()->SetVisibility(ESlateVisibility::Collapsed); //collapse the horizontal box
 }
 
 void UInv_ItemPopUp::CollapseConsumeButton() const

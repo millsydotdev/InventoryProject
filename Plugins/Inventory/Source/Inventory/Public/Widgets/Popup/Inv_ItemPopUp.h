@@ -42,6 +42,7 @@ public:
 	void SetGridIndex(const int32 InGridIndex) { GridIndex = InGridIndex; }
 	
 	void CollapseSplitButton() const;
+	void CollapseSplitSlider() const;
 	void CollapseConsumeButton() const;
 	void SetSliderParams(const float Max, const float Value) const;
 	

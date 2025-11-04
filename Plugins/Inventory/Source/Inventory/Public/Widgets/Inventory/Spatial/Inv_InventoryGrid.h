@@ -7,6 +7,7 @@
 #include "Types/Inv_GridTypes.h"
 #include "Inv_InventoryGrid.generated.h"
 
+class UInv_ItemPopUp;
 enum class EInv_GridSlotState : uint8;
 class UInv_HoverItem;
 struct FGameplayTag;
@@ -66,8 +67,13 @@ public:
 	
 	UFUNCTION()
 	void AddItem(UInv_InventoryItem* Item);
+
+	void SetOwningCanvasPanel(UCanvasPanel* InCanvasPanel);
 	
 private:
+	TWeakObjectPtr<UInv_InventoryComponent> InventoryComponent;
+	TWeakObjectPtr<UCanvasPanel> OwningCanvasPanel;
+	
 	UPROPERTY()
 	TMap<EInv_MouseCursorVisibilityType, UUserWidget*> MouseCursorWidgetMap;
 	
@@ -137,6 +143,16 @@ private:
 
 	UFUNCTION()
 	void OnSlottedItemClicked(int32 GridIndex, const FPointerEvent& MouseEvent);
+	void CreateItemPopup(const int32 GridIndex);
+
+	UFUNCTION()
+	void OnPopupMenuSplit(int32 SplitAmount, int32 Index);
+
+	UFUNCTION()
+	void OnPopupMenuDrop(int32 Index);
+
+	UFUNCTION()
+	void OnPopupMenuConsume(int32 Index);
 
 	UFUNCTION()
 	void OnGridSlotClicked(int32 GridIndex, const FPointerEvent& MouseEvent);
@@ -155,8 +171,9 @@ private:
 	void AssignHoverItem(UInv_InventoryItem* InventoryItem);
 	void AssignHoverItem(UInv_InventoryItem* InventoryItem, const int32 GridIndex, const int32 PreviousGridIndex);
 	void RemoveItemFromGrid(UInv_InventoryItem* InventoryItem, const int32 GridIndex);
-	
-	TWeakObjectPtr<UInv_InventoryComponent> InventoryComponent;
+
+	//Drop the current hover item.
+	void DropItem();
 	
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"), Category = "Inventory")
 	EInv_ItemCategory ItemCategory;
@@ -165,6 +182,12 @@ private:
 
 	UPROPERTY(EditAnywhere, Category = "Inventory")
 	TSubclassOf<UInv_GridSlot> GridSlotClass;
+
+	UPROPERTY()
+	TObjectPtr<UInv_ItemPopUp> ItemPopup;
+	
+	UPROPERTY(EditAnywhere, Category = "Inventory")
+	TSubclassOf<UInv_ItemPopUp> ItemPopupClass;
 
 	//These store information about the position of the mouse within the grid
 	//(Specific slot, specific position within this slot)
