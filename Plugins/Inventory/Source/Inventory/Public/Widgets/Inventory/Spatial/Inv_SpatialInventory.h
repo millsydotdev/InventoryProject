@@ -20,6 +20,7 @@ class INVENTORY_API UInv_SpatialInventory : public UInv_InventoryBase
 public:
 	//~Begin UUserWidget Interface
 	virtual void NativeOnInitialized() override;
+	virtual FReply NativeOnMouseButtonDown(const FGeometry& MyGeometry, const FPointerEvent& MouseEvent) override;
 	//~End UUserWidget Interface
 
 	//~Begin UInv_InventoryBase Interface

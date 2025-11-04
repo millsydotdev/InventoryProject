@@ -20,6 +20,9 @@ public:
 	virtual void GetLifetimeReplicatedProps(TArray<class FLifetimeProperty>& OutLifetimeProps) const override;
 	//~End ActorComponent Interface
 
+	//called only on item drop so far, in other cases - have bp classes with item manifests set up.
+	void SetItemManifest(FInv_ItemManifest InItemManifest) { ItemManifest = InItemManifest; };
+	
 	FInv_ItemManifest GetItemManifest() const { return ItemManifest; };
 
 	FString GetPickupMessage() const { return PickupMessage; };

@@ -71,17 +71,51 @@ void UInv_InventoryComponent::Server_DropItem_Implementation(UInv_InventoryItem*
 	SpawnDroppedItem(Item, StackCount);
 }
 
+void UInv_InventoryComponent::Server_ConsumeItem_Implementation(UInv_InventoryItem* Item)
+{
+	//take care of inventory data structure
+	const int32 NewStackCount = Item->GetTotalStackCount() - 1;
+	if (NewStackCount <= 0)
+	{
+		InventoryList.RemoveEntry(Item);
+	}
+	else
+	{
+		Item->SetTotalStackCount(NewStackCount);
+	}
+
+	//TODO: Get the consumable fragment
+	//(Create the consumable item fragment)
+	
+}
+
 void UInv_InventoryComponent::SpawnDroppedItem(UInv_InventoryItem* Item, int32 StackCount)
 {
+	//Get item Manifest from this Item.
+	FInv_ItemManifest& ItemManifest = Item->GetItemManifestMutable();
+	if (FInv_StackableFragment* StackableFragment = ItemManifest.GetFragmentOfTypeMutable<FInv_StackableFragment>())
+	{
+		StackableFragment->SetStackCount(StackCount);
+	}
+
+	//Get spawn properties
 	const APawn* OwningPawn = OwningPlayerController->GetPawn();
 	FVector RotatedForward;
 	RotatedForward = OwningPawn->GetActorForwardVector();
 	RotatedForward = RotatedForward.RotateAngleAxis(FMath::RandRange(-38, 38), FVector::UpVector);
 
 	FVector SpawnLocation = OwningPawn->GetActorLocation() + RotatedForward * FMath::RandRange(100, 150);
-	SpawnLocation.Z+=50.f;
+	SpawnLocation.Z-=50.f;
 
+	//Spawn actor
+	if (!IsValid(ItemManifest.GetDropActorClass())) return;
+	AActor* SpawnedActor = this->GetWorld()->SpawnActor<AActor>(ItemManifest.GetDropActorClass(), SpawnLocation, FRotator::ZeroRotator);
+	if (!IsValid(SpawnedActor)) return;
 	
+	//Set item manifest on this actor
+	UInv_ItemComponent* SpawnedActorItemComponent = SpawnedActor->FindComponentByClass<UInv_ItemComponent>();
+	if (!IsValid(SpawnedActorItemComponent)) return;
+	SpawnedActorItemComponent->SetItemManifest(ItemManifest);
 }
 
 void UInv_InventoryComponent::Server_AddNewItem_Implementation(UInv_ItemComponent* ItemComponent, int32 StackCount)

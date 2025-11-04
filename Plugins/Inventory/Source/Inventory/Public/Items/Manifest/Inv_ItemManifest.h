@@ -24,6 +24,7 @@ struct INVENTORY_API FInv_ItemManifest
 
 	EInv_ItemCategory GetItemCategory() const { return ItemCategory; }
 	FGameplayTag GetItemType() const { return ItemType; }
+	TSubclassOf<AActor> GetDropActorClass() {return DropActorClass; };
 	
 	template<typename FragmentType>
 	requires std::derived_from<FragmentType, FInv_ItemFragment>
@@ -43,6 +44,12 @@ private:
 	
 	UPROPERTY(EditAnywhere, Category = "Inventory")
 	EInv_ItemCategory ItemCategory{EInv_ItemCategory::None};
+
+	//Drop Actor to spawn in the world on item drop.
+	//Not standardised to allow for different pickup classes for different projects.
+	UPROPERTY(EditAnywhere, Category = "Inventory")
+	TSubclassOf<AActor> DropActorClass{nullptr};
+	
 
 	UPROPERTY(EditAnywhere, Category = "Inventory", meta=(Categories = "GameItems")) //Categories specify the "GameItems" tag
 	FGameplayTag ItemType;

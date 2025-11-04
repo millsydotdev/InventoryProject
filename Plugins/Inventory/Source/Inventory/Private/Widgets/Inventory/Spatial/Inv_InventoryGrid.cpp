@@ -890,15 +890,29 @@ void UInv_InventoryGrid::OnPopupMenuDrop(int32 Index)
 	if (!IsValid(RightClickedItem)) return;
 
 	//Assign item at this grid index to hover item, then call drop on server and then remove the hover item.
-	
-	
 	PickUp(RightClickedItem, Index);
 	DropItem();
 }
 
 void UInv_InventoryGrid::OnPopupMenuConsume(int32 Index)
 {
+	UInv_InventoryItem* RightClickedItem = GridSlots[Index]->GetInventoryItem().Get();
+	if (!IsValid(RightClickedItem)) return;
+
+	const int32 UpperLeftIndex = GridSlots[Index]->GetUpperLeftIndex();
+	UInv_GridSlot* UpperLeftGridSlot = GridSlots[UpperLeftIndex];
+	const int32 NewStackCount = UpperLeftGridSlot->GetStackCount() - 1;
+
+	UpperLeftGridSlot->SetStackCount(NewStackCount);
+	SlottedItems.FindChecked(UpperLeftIndex)->UpdateStackCountText(NewStackCount);
+
+	//Tell the server we're consuming an item
+	InventoryComponent->Server_ConsumeItem(RightClickedItem);
 	
+	if (NewStackCount <= 0)
+	{
+		RemoveItemFromGrid(RightClickedItem, Index);
+	}
 }
 
 bool UInv_InventoryGrid::IsLeftMouseClick(const FPointerEvent& MouseEvent) const
@@ -982,9 +996,10 @@ void UInv_InventoryGrid::DropItem()
 	if (!IsValid(HoverItem)) return;
 	if (!IsValid(HoverItem->GetInventoryItem())) return;
 
-	//TODO: Tell the server to actually drop the item
-	//Clear hover item
+	//Tell the server to actually drop the item
+	InventoryComponent->Server_DropItem(HoverItem->GetInventoryItem(), HoverItem->GetStackCount());
 
+	//Clear hover item
 	ClearHoverItem();
 }
 

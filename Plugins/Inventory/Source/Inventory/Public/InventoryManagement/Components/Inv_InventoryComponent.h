@@ -37,6 +37,9 @@ public:
 
 	UFUNCTION(Server, Reliable) //reliable - guaranteed to hit the server
 	void Server_DropItem(UInv_InventoryItem* Item, int32 StackCount);
+
+	UFUNCTION(Server, Reliable) //reliable - guaranteed to hit the server
+	void Server_ConsumeItem(UInv_InventoryItem* Item);
 	
 	void SpawnDroppedItem(UInv_InventoryItem* Item, int32 StackCount);
 
@@ -73,10 +76,6 @@ private:
 	//Class for a widget created in Construct Inventory
 	UPROPERTY(EditAnywhere, Category = "Inventory")
 	TSubclassOf<UInv_InventoryBase> InventoryMenuClass;
-
-	//Not standardised to allow for different pickup classes for different projects.
-	UPROPERTY(EditAnywhere, Category = "Inventory")
-	TSubclassOf<AActor> PickupActorClass;
 
 	bool bInventoryMenuOpen;
 	void OpenInventoryMenu();

@@ -69,7 +69,9 @@ public:
 	void AddItem(UInv_InventoryItem* Item);
 
 	void SetOwningCanvasPanel(UCanvasPanel* InCanvasPanel);
-	
+
+	//Drop the current hover item.
+	void DropItem();
 private:
 	TWeakObjectPtr<UInv_InventoryComponent> InventoryComponent;
 	TWeakObjectPtr<UCanvasPanel> OwningCanvasPanel;
@@ -171,9 +173,6 @@ private:
 	void AssignHoverItem(UInv_InventoryItem* InventoryItem);
 	void AssignHoverItem(UInv_InventoryItem* InventoryItem, const int32 GridIndex, const int32 PreviousGridIndex);
 	void RemoveItemFromGrid(UInv_InventoryItem* InventoryItem, const int32 GridIndex);
-
-	//Drop the current hover item.
-	void DropItem();
 	
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"), Category = "Inventory")
 	EInv_ItemCategory ItemCategory;
