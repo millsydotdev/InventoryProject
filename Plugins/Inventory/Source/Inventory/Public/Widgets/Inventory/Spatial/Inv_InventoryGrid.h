@@ -7,6 +7,7 @@
 #include "Types/Inv_GridTypes.h"
 #include "Inv_InventoryGrid.generated.h"
 
+class UInv_ItemDescription;
 class UInv_ItemPopUp;
 enum class EInv_GridSlotState : uint8;
 class UInv_HoverItem;
@@ -37,7 +38,6 @@ public:
 	void HighlightSlots(const int32 Index, const FIntPoint& Dimensions);
 	void UnHighlightSlots(const int32 Index, const FIntPoint& Dimensions);
 	void ChangeHoverType(const int32 Index, const FIntPoint& Dimensions, EInv_GridSlotState GridSlotState);
-	void ClearHoverItem();
 
 	bool IsSameStackable(const UInv_InventoryItem* ClickedInventoryItem) const;
 	void SwapWithHoverItem(UInv_InventoryItem* ClickedInventoryItem, const int32 GridIndex);
@@ -45,6 +45,10 @@ public:
 	void SwapStackCounts(const int32 ClickedStackCount, const int32 HoveredStackCount, const int32 Index);
 	void ConsumeHoverItemStacks(const int32 ClickedStackCount, const int32 HoveredStackCount, const int32 Index);
 	void FillInStack(const int32 FillAmount, const int32 Remainder, const int32 Index);
+
+	bool HasHoverItem() const;
+	UInv_ItemDescription* GetOrCreateItemDescription();
+	void SetItemDescriptionSizeAndPosition(UInv_ItemDescription* Description, UCanvasPanel* Canvas) const;
 	
 	void SetMouseCursorWidgetByVisibilityType(const EInv_MouseCursorVisibilityType& MouseCursor);
 
@@ -90,6 +94,17 @@ private:
 	void AddItemToIndices(const FInv_SlotAvailabilityResult& Result, UInv_InventoryItem* NewItem);
 	void AddItemAtIndex(UInv_InventoryItem* Item, const int32 Index, const bool bStackable, const int32 StackAmount);
 
+	UFUNCTION()
+	void OnSlottedItemHovered(UInv_InventoryItem* Item);
+
+	FTimerHandle Description_Timer;
+
+	UPROPERTY(EditAnywhere, Category = "Inventory")
+	float DescriptionTimerDelay = 0.5f;
+	
+	UFUNCTION()
+	void OnSlottedItemUnhovered();
+	
 	//create widget to add to the grid and set its properties
 	UInv_SlottedItem* CreateSlottedItem(
 		UInv_InventoryItem* Item,
@@ -172,6 +187,7 @@ private:
 	void PickUp(UInv_InventoryItem* ClickedInventoryItem, const int32 GridIndex);
 	void AssignHoverItem(UInv_InventoryItem* InventoryItem);
 	void AssignHoverItem(UInv_InventoryItem* InventoryItem, const int32 GridIndex, const int32 PreviousGridIndex);
+	void ClearHoverItem();
 	void RemoveItemFromGrid(UInv_InventoryItem* InventoryItem, const int32 GridIndex);
 	
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"), Category = "Inventory")
@@ -187,6 +203,12 @@ private:
 	
 	UPROPERTY(EditAnywhere, Category = "Inventory")
 	TSubclassOf<UInv_ItemPopUp> ItemPopupClass;
+
+	UPROPERTY()
+	TObjectPtr<UInv_ItemDescription> ItemDescription;
+
+	UPROPERTY(EditAnywhere, Category = "Inventory")
+	TSubclassOf<UInv_ItemDescription> ItemDescriptionClass;
 
 	//These store information about the position of the mouse within the grid
 	//(Specific slot, specific position within this slot)

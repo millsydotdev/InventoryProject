@@ -51,6 +51,8 @@ public:
 	//presents a method to replicate objects on some actor or actor component
 	void AddRepSubObj(UObject* SubObj);
 
+	UInv_InventoryBase* GetInventoryMenu() const { return InventoryMenu; };
+
 	FInventoryItemChange OnInventoryItemAdded;
 	FInventoryItemChange OnInventoryItemRemoved;
 	FNoRoomInInventory NoRoomInInventory;

@@ -15,6 +15,7 @@
 #include "Widgets/Inventory/GridSlots/Inv_GridSlot.h"
 #include "Widgets/Inventory/HoverItem/Inv_HoverItem.h"
 #include "Widgets/Inventory/SlottedItems/Inv_SlottedItem.h"
+#include "Widgets/ItemDescription/Inv_ItemDescription.h"
 #include "Widgets/Popup/Inv_ItemPopUp.h"
 #include "Widgets/Utils/Inv_WidgetUtils.h"
 
@@ -41,8 +42,15 @@ void UInv_InventoryGrid::NativeTick(const FGeometry& MyGeometry, float DeltaTime
 	{
 		return;
 	}
-	
 	UpdateTileParameters(CanvasPos, MousePos);
+
+	if (!IsValid(ItemDescription))
+	{
+		return;
+	}
+	SetItemDescriptionSizeAndPosition(ItemDescription, OwningCanvasPanel.Get());
+	
+	
 }
 
 bool UInv_InventoryGrid::CursorExitedCanvas(const FVector2D& CanvasPosition, const FVector2D& BoundarySize,
@@ -123,6 +131,38 @@ void UInv_InventoryGrid::ClearHoverItem()
 
 	//Show mouse cursor
 	SetMouseCursorWidgetByVisibilityType(EInv_MouseCursorVisibilityType::Visible);
+}
+
+bool UInv_InventoryGrid::HasHoverItem() const
+{
+	return IsValid(HoverItem);
+}
+
+UInv_ItemDescription* UInv_InventoryGrid::GetOrCreateItemDescription()
+{
+	if (!IsValid(ItemDescription) && IsValid(ItemDescriptionClass))
+	{
+		ItemDescription = CreateWidget<UInv_ItemDescription>(GetOwningPlayer(), ItemDescriptionClass);
+		OwningCanvasPanel->AddChild(ItemDescription);
+	}
+	
+	return ItemDescription;
+}
+
+void UInv_InventoryGrid::SetItemDescriptionSizeAndPosition(UInv_ItemDescription* Description, UCanvasPanel* Canvas) const
+{
+	UCanvasPanelSlot* ItemDescriptionCPS = UWidgetLayoutLibrary::SlotAsCanvasSlot(Description);
+	if (!IsValid(ItemDescription)) return;
+
+	const FVector2D ItemDescSize = Description->GetBoxSize();
+	ItemDescriptionCPS->SetSize(ItemDescSize);
+
+	FVector2D ClampedPosition = UInv_WidgetUtils::GetClampedWidgetPosition(UInv_WidgetUtils::GetWidgetSize(OwningCanvasPanel.Get()),
+		ItemDescSize,
+		UWidgetLayoutLibrary::GetMousePositionOnViewport(GetOwningPlayer())
+	);
+
+	ItemDescriptionCPS->SetPosition(ClampedPosition);
 }
 
 bool UInv_InventoryGrid::IsSameStackable(const UInv_InventoryItem* ClickedInventoryItem) const
@@ -518,8 +558,8 @@ void UInv_InventoryGrid::AddItemAtIndex(UInv_InventoryItem* Item, const int32 In
 }
 
 UInv_SlottedItem* UInv_InventoryGrid::CreateSlottedItem(UInv_InventoryItem* Item, const bool bStackable,
-	const int32 StackAmount, const FInv_GridFragment* GridFragment, const FInv_ImageFragment* ImageFragment,
-	const int32 Index)
+                                                        const int32 StackAmount, const FInv_GridFragment* GridFragment, const FInv_ImageFragment* ImageFragment,
+                                                        const int32 Index)
 {
 	UInv_SlottedItem* SlottedItem = CreateWidget<UInv_SlottedItem>(GetOwningPlayer(), SlottedItemClass);
 	SlottedItem->SetInventoryItem(Item);
@@ -531,8 +571,36 @@ UInv_SlottedItem* UInv_InventoryGrid::CreateSlottedItem(UInv_InventoryItem* Item
 	const int32 StackUpdateAmount = bStackable ? StackAmount : 0;
 	SlottedItem->UpdateStackCountText(StackUpdateAmount);
 	SlottedItem->OnSlottedItemClicked.AddDynamic(this, &ThisClass::OnSlottedItemClicked);
+	SlottedItem->OnSlottedItemHovered.BindDynamic(this, &ThisClass::OnSlottedItemHovered);
+	SlottedItem->OnSlottedItemUnhovered.BindDynamic(this, &ThisClass::OnSlottedItemUnhovered);
 
 	return SlottedItem;
+}
+
+void UInv_InventoryGrid::OnSlottedItemHovered(UInv_InventoryItem* Item)
+{
+	if (HasHoverItem()) return;
+
+	UInv_ItemDescription* DescriptionWidget = GetOrCreateItemDescription();
+	DescriptionWidget->SetVisibility(ESlateVisibility::Collapsed);
+
+	GetOwningPlayer()->GetWorldTimerManager().ClearTimer(Description_Timer);
+
+	FTimerDelegate DescriptionTimerDelegate;
+	DescriptionTimerDelegate.BindLambda([this]()
+		{
+			GetOrCreateItemDescription()->SetVisibility(ESlateVisibility::HitTestInvisible); //don't detect any mouse click hits
+		}
+	);
+	
+	GetOwningPlayer()->GetWorldTimerManager().SetTimer(Description_Timer, DescriptionTimerDelegate, DescriptionTimerDelay, false);
+}
+
+void UInv_InventoryGrid::OnSlottedItemUnhovered()
+{
+	GetOwningPlayer()->GetWorldTimerManager().ClearTimer(Description_Timer);
+
+	GetOrCreateItemDescription()->SetVisibility(ESlateVisibility::Collapsed);
 }
 
 void UInv_InventoryGrid::SetSlottedItemImage(const UInv_SlottedItem* SlottedItem, const FInv_GridFragment* GridFragment,
@@ -749,6 +817,9 @@ void UInv_InventoryGrid::OnSlottedItemClicked(int32 GridIndex, const FPointerEve
 	UE_LOG(LogInventory, Log, TEXT("OnSlottedItemClicked"));
 	
 	check(GridSlots.IsValidIndex(GridIndex));
+
+	//stop showing item description
+	OnSlottedItemUnhovered();
 	
 	UInv_InventoryItem* ClickedInventoryItem = GridSlots[GridIndex]->GetInventoryItem().Get();
 	

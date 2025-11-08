@@ -12,6 +12,20 @@ FReply UInv_SlottedItem::NativeOnMouseButtonDown(const FGeometry& InGeometry, co
 	return FReply::Handled();
 }
 
+void UInv_SlottedItem::NativeOnMouseEnter(const FGeometry& InGeometry, const FPointerEvent& InMouseEvent)
+{
+	Super::NativeOnMouseEnter(InGeometry, InMouseEvent);
+	
+	OnSlottedItemHovered.ExecuteIfBound(InventoryItem.Get());
+}
+
+void UInv_SlottedItem::NativeOnMouseLeave(const FPointerEvent& InMouseEvent)
+{
+	Super::NativeOnMouseLeave(InMouseEvent);
+
+	OnSlottedItemUnhovered.ExecuteIfBound();
+}
+
 void UInv_SlottedItem::SetInventoryItem(UInv_InventoryItem* Item)
 {
 	InventoryItem = Item;

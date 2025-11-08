@@ -25,6 +25,9 @@ public:
 
 	//~Begin UInv_InventoryBase Interface
 	virtual FInv_SlotAvailabilityResult HasRoomForItem(UInv_ItemComponent* ItemComponent) const override;
+	//virtual void OnItemHovered(UInv_InventoryItem* Item) override;
+	//virtual void OnItemUnhovered() override;
+	//virtual bool HasHoverItem() const override;
 	//~End UInv_InventoryBase Interface
 private:
 	
