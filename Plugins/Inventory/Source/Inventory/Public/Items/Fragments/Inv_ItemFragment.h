@@ -3,6 +3,7 @@
 #include "CoreMinimal.h"
 #include "GameplayTagContainer.h"
 #include "Inv_FragmentTags.h"
+#include "StructUtils/InstancedStruct.h"
 #include "Inv_ItemFragment.generated.h"
 
 class UInv_CompositeBase;
@@ -91,6 +92,32 @@ private:
 };
 
 /*
+* Stackable Item Fragment
+*/
+USTRUCT(BlueprintType)
+struct FInv_StackableFragment : public FInv_ItemFragment
+{
+	GENERATED_BODY()
+public:
+	//default constructor for this fragment (setting up tag, but can be done in bp as well)
+	FInv_StackableFragment() { FragmentTag = FragmentTags::StackableFragment; }
+	
+	int32 GetMaxStackSize() const { return MaxStackSize; }
+	int32 GetStackCount() const { return StackCount; }
+
+	void SetStackCount(const int32 NewStackCount) { StackCount = NewStackCount; }
+	
+private:
+	UPROPERTY(EditAnywhere, Category = "Inventory")
+	int32 MaxStackSize{1};
+
+	//currently more like item count?
+	UPROPERTY(EditAnywhere, Category = "Inventory")
+	int32 StackCount{1};
+	
+};
+
+/*
 * Image Item Fragment (for any image icon we need)
 */
 USTRUCT(BlueprintType)
@@ -137,7 +164,7 @@ private:
 };
 
 /*
-* Labeled Number Item Fragment
+* Labeled Number Item Fragment - for label containing name and value.
 */
 USTRUCT(BlueprintType)
 struct FInv_LabeledNumberFragment : public FInv_InventoryItemFragment
@@ -154,6 +181,8 @@ public:
 	bool bRandomizeOnManifest = true;
 
 	virtual void Assimilate(UInv_CompositeBase* Composite) const override;
+
+	float GetValue() const { return Value; }
 	
 private:
 	UPROPERTY(EditAnywhere, Category = "Inventory")
@@ -183,62 +212,55 @@ private:
 };
 
 /*
-* Stackable Item Fragment
+* Consumable Fragments Modifiers
 */
+
+//Base
 USTRUCT(BlueprintType)
-struct FInv_StackableFragment : public FInv_ItemFragment
+struct FInv_ConsumeModifierFragment : public FInv_LabeledNumberFragment
+{
+	GENERATED_BODY()
+
+	virtual void OnConsume(APlayerController* PC) {};
+};
+
+//Health Potion
+USTRUCT(BlueprintType)
+struct FInv_HealthPotionFragment : public FInv_ConsumeModifierFragment
 {
 	GENERATED_BODY()
 public:
-	//default constructor for this fragment (setting up tag, but can be done in bp as well)
-	FInv_StackableFragment() { FragmentTag = FragmentTags::StackableFragment; }
 	
-	int32 GetMaxStackSize() const { return MaxStackSize; }
-	int32 GetStackCount() const { return StackCount; }
+	virtual void OnConsume(APlayerController* PC) override;
+};
 
-	void SetStackCount(const int32 NewStackCount) { StackCount = NewStackCount; }
+//Mana Potion
+USTRUCT(BlueprintType)
+struct FInv_ManaPotionFragment : public FInv_ConsumeModifierFragment
+{
+	GENERATED_BODY()
+public:
 	
-private:
-	UPROPERTY(EditAnywhere, Category = "Inventory")
-	int32 MaxStackSize{1};
-
-	//currently more like item count?
-	UPROPERTY(EditAnywhere, Category = "Inventory")
-	int32 StackCount{1};
-	
+	virtual void OnConsume(APlayerController* PC) override;
 };
 
 /*
-* Base Consumable Item Fragment
+* Base Consumable Item Fragment - contains consume modifiers
 */
 USTRUCT(BlueprintType)
-struct FInv_ConsumableFragment : public FInv_ItemFragment
+struct FInv_ConsumableFragment : public FInv_InventoryItemFragment
 {
 	GENERATED_BODY()
 public:
 	FInv_ConsumableFragment() { FragmentTag = FragmentTags::ConsumableFragment; };
 
-	virtual void OnConsume(APlayerController* PC) {};
-};
+	//call these functions on all the child fragments
+	virtual void OnConsume(APlayerController* PC);
+	virtual void Assimilate(UInv_CompositeBase* Composite) const override;
+	virtual void Manifest() override;
 
-USTRUCT(BlueprintType)
-struct FInv_HealthPotion : public FInv_ConsumableFragment
-{
-	GENERATED_BODY()
-public:
-	UPROPERTY(EditAnywhere, Category = "Inventory")
-	float HealAmount = 20.f;
-	
-	virtual void OnConsume(APlayerController* PC) override;
-};
-
-USTRUCT(BlueprintType)
-struct FInv_ManaPotion : public FInv_ConsumableFragment
-{
-	GENERATED_BODY()
-public:
-	UPROPERTY(EditAnywhere, Category = "Inventory")
-	float ManaAmount = 20.f;
-	
-	virtual void OnConsume(APlayerController* PC) override;
+private:
+	//subfragments for all the types of additional consume effects
+	UPROPERTY(EditAnywhere, Category = "Inventory", meta = (ExcludeBaseStruct))
+	TArray<TInstancedStruct<FInv_ConsumeModifierFragment>> ConsumeModifiers;
 };
