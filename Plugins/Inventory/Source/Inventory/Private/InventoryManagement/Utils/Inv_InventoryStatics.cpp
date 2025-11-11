@@ -29,6 +29,6 @@ UInv_HoverItem* UInv_InventoryStatics::GetHoverItem(APlayerController* PC)
 
 	UInv_InventoryBase* InventoryBase = IC->GetInventoryMenu();
 	if (!IsValid(InventoryBase)) return nullptr;
-
+	
 	return InventoryBase->GetHoverItem();
 }

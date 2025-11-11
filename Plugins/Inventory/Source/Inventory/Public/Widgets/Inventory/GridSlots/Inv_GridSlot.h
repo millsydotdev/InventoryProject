@@ -56,6 +56,11 @@ public:
 	FGridSlotEvent OnGridSlotHovered;
 	FGridSlotEvent OnGridSlotUnhovered;
 
+protected:
+	
+	//current grid slot state
+	EInv_GridSlotState GridSlotState = EInv_GridSlotState::Unoccupied;
+
 private:
 	int32 TileIndex{INDEX_NONE};
 	int32 StackCount{0};
@@ -64,11 +69,8 @@ private:
 
 	bool bIsAvailable{true};
 
-	UPROPERTY(EditDefaultsOnly, Category="Style")
+	UPROPERTY(EditAnywhere, Category="Style")
 	TMap<EInv_GridSlotState, FSlateBrush> StateBrushes;
-	
-	//current grid slot state
-	EInv_GridSlotState GridSlotState;
 	
 	//******* Bound Widgets *******//
 	UPROPERTY(meta = (BindWidget))
