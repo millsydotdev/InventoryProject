@@ -130,7 +130,9 @@ public:
 	
 	UTexture2D* GetIcon() const { return Icon; }
 
+	//~Begin FInv_InventoryItemFragment Interface
 	virtual void Assimilate(UInv_CompositeBase* Composite) const override;
+	//~End FInv_InventoryItemFragment Interface
 	
 private:
 	UPROPERTY(EditAnywhere, Category = "Inventory")
@@ -155,7 +157,9 @@ public:
 	FText GetText() const { return FragmentText; }
 	void SetText(const FText& NewText) { FragmentText = NewText; }
 
+	//~Begin FInv_ItemFragment Interface
 	virtual void Assimilate(UInv_CompositeBase* Composite) const override;
+	//~End FInv_ItemFragment Interface
 	
 private:
 	UPROPERTY(EditAnywhere, Category = "Inventory")
@@ -174,13 +178,17 @@ public:
 	//default constructor for this fragment (NOT setting up tag here, done in bp)
 	FInv_LabeledNumberFragment() {}
 
+	//~Begin FInv_ItemFragment Interface
 	virtual void Manifest() override;
+	//~End FInv_ItemFragment Interface
 
 	// When manifesting for the first time this fragment will randomize, but once equipped and dropped the item should
 	// retain the same value, and randomization should not occur.
 	bool bRandomizeOnManifest = true;
 
+	//~Begin FInv_ItemFragment Interface
 	virtual void Assimilate(UInv_CompositeBase* Composite) const override;
+	//~End FInv_ItemFragment Interface
 
 	float GetValue() const { return Value; }
 	
@@ -256,11 +264,72 @@ public:
 
 	//call these functions on all the child fragments
 	virtual void OnConsume(APlayerController* PC);
+	
+	//~Begin FInv_ItemFragment Interface
 	virtual void Assimilate(UInv_CompositeBase* Composite) const override;
+	//~End FInv_ItemFragment Interface
+
+	//~Begin FInv_ItemFragment Interface
 	virtual void Manifest() override;
+	//~End FInv_ItemFragment Interface
 
 private:
 	//subfragments for all the types of additional consume effects
 	UPROPERTY(EditAnywhere, Category = "Inventory", meta = (ExcludeBaseStruct))
 	TArray<TInstancedStruct<FInv_ConsumeModifierFragment>> ConsumeModifiers;
+};
+
+
+/*
+* Equip Modifier Fragments
+*/
+
+//Base
+USTRUCT(BlueprintType)
+struct FInv_EquipModifierFragment : public FInv_LabeledNumberFragment
+{
+	GENERATED_BODY()
+public:
+	
+	virtual void OnEquip(APlayerController* PC) {};
+	virtual void OnUnequip(APlayerController* PC) {};
+};
+
+
+//Strength
+USTRUCT(BlueprintType)
+struct FInv_StrengthModifierFragment : public FInv_EquipModifierFragment
+{
+	GENERATED_BODY()
+public:
+	
+	virtual void OnEquip(APlayerController* PC) override;
+	virtual void OnUnequip(APlayerController* PC) override;
+};
+
+
+/*
+* Base Equipment Fragment - contains equip modifiers
+*/
+USTRUCT(BlueprintType)
+struct FInv_EquipmentFragment : public FInv_InventoryItemFragment
+{
+	GENERATED_BODY()
+public:
+	//default constructor for this fragment (NOT setting up tag here, done in bp)
+	FInv_EquipmentFragment() {}
+
+	void OnEquip(APlayerController* PC);
+	void OnUnequip(APlayerController* PC);
+
+	//~Begin FInv_InventoryItemFragment Interface
+	virtual void Assimilate(UInv_CompositeBase* Composite) const override;
+	//~End FInv_InventoryItemFragment Interface
+	
+private:
+	//subfragments for all the types of additional equip effects
+	UPROPERTY(EditAnywhere, Category = "Inventory", meta = (ExcludeBaseStruct))
+	TArray<TInstancedStruct<FInv_EquipModifierFragment>> EquipModifiers;
+
+	bool bEquipped = false;
 };

@@ -99,6 +99,50 @@ void FInv_ConsumableFragment::Manifest()
 	}
 }
 
+void FInv_StrengthModifierFragment::OnEquip(APlayerController* PC)
+{
+	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Blue, FString::Printf(TEXT("Strength increased by %f."), GetValue()));
+}
+
+void FInv_StrengthModifierFragment::OnUnequip(APlayerController* PC)
+{
+	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, FString::Printf(TEXT("Strength decreased by %f."), GetValue()));
+}
+
+void FInv_EquipmentFragment::OnEquip(APlayerController* PC)
+{
+	if (bEquipped) return;
+	
+	for (auto& Modifier : EquipModifiers)
+	{
+		Modifier.GetMutable().OnEquip(PC);
+	}
+
+	bEquipped = true;
+}
+
+void FInv_EquipmentFragment::OnUnequip(APlayerController* PC)
+{
+	if (!bEquipped) return;
+	
+	for (auto& Modifier : EquipModifiers)
+	{
+		Modifier.GetMutable().OnUnequip(PC);
+	}
+
+	bEquipped = false;
+}
+
+void FInv_EquipmentFragment::Assimilate(UInv_CompositeBase* Composite) const
+{
+	FInv_InventoryItemFragment::Assimilate(Composite);
+	
+	for (const auto& Modifier : EquipModifiers)
+	{
+		Modifier.Get().Assimilate(Composite);
+	}
+}
+
 void FInv_HealthPotionFragment::OnConsume(APlayerController* PC)
 {
 	//Get stats comp from the PC or the PC->GetPawn()
