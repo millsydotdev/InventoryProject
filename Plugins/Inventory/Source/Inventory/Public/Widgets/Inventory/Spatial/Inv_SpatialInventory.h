@@ -33,6 +33,9 @@ public:
 	//virtual void OnItemUnhovered() override;
 	//virtual bool HasHoverItem() const override;
 	//~End UInv_InventoryBase Interface
+
+	bool CanEquipHoverItem(UInv_EquippedGridSlot* EquippedGridSlot, const FGameplayTag& EquipmentTypeTag) const;
+	
 private:
 	
 	//******* Bound Widgets *******//
