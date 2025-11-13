@@ -220,15 +220,20 @@ void UInv_SpatialInventory::ShowConsumables()
 
 void UInv_SpatialInventory::SetActiveGrid(UInv_InventoryGrid* Grid, UButton* DisableButton)
 {
-	if (ActiveGrid.IsValid()) ActiveGrid->SetMouseCursorWidgetByVisibilityType(EInv_MouseCursorVisibilityType::Hidden);
-	ActiveGrid = Grid;
-	if (ActiveGrid.IsValid()) ActiveGrid->SetMouseCursorWidgetByVisibilityType(EInv_MouseCursorVisibilityType::Visible);
+	if (ActiveGrid.IsValid())
+	{
+		ActiveGrid->SetMouseCursorWidgetByVisibilityType(EInv_MouseCursorVisibilityType::Hidden);
+		Grid->OnHide();
+	}
 	
 	Button_Equippables->SetIsEnabled(true);
 	Button_Craftables->SetIsEnabled(true);
 	Button_Consumables->SetIsEnabled(true);
 	DisableButton->SetIsEnabled(false);
 
+	ActiveGrid = Grid;
+	ActiveGrid->SetMouseCursorWidgetByVisibilityType(EInv_MouseCursorVisibilityType::Visible);
+	
 	Switcher->SetActiveWidget(Grid);
 }
 
@@ -243,8 +248,11 @@ void UInv_SpatialInventory::MakeEquippedSlottedItem(UInv_EquippedSlottedItem* Eq
 		GetTileSize()
 	);
 
-	SlottedItem->OnEquippedSlottedItemClicked.AddDynamic(this, &ThisClass::EquippedSlottedItemClicked);
-
+	if (IsValid(SlottedItem))
+	{
+		SlottedItem->OnEquippedSlottedItemClicked.AddDynamic(this, &ThisClass::EquippedSlottedItemClicked);
+	}
+	
 	EquippedGridSlot->SetEquippedSlottedItem(SlottedItem);
 }
 

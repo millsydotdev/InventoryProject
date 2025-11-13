@@ -28,7 +28,13 @@ void UInv_InventoryGrid::NativeOnInitialized()
 	InventoryComponent = UInv_InventoryStatics::GetInventoryComponent(GetOwningPlayer());
 	InventoryComponent->OnInventoryItemAdded.AddDynamic(this, &ThisClass::AddItem);
 	InventoryComponent->OnStackChange.AddDynamic(this, &ThisClass::AddStacks);
+	InventoryComponent->OnInventoryMenuToggled.AddDynamic(this, &ThisClass::OnInventoryMenuToggled);
 	
+}
+
+void UInv_InventoryGrid::OnInventoryMenuToggled(bool bToggleInventoryMenu)
+{
+	if (!bToggleInventoryMenu) PutHoverItemBack();
 }
 
 void UInv_InventoryGrid::NativeTick(const FGeometry& MyGeometry, float DeltaTime)
@@ -53,8 +59,13 @@ void UInv_InventoryGrid::NativeTick(const FGeometry& MyGeometry, float DeltaTime
 	
 }
 
+void UInv_InventoryGrid::OnHide()
+{
+	PutHoverItemBack();
+}
+
 bool UInv_InventoryGrid::CursorExitedCanvas(const FVector2D& CanvasPosition, const FVector2D& BoundarySize,
-	const FVector2D& Location)
+                                            const FVector2D& Location)
 {
 	bLastMouseWithinCanvas = bMouseWithinCanvas;
 	bMouseWithinCanvas = UInv_WidgetUtils::IsWithinBounds(CanvasPosition, BoundarySize, Location);
@@ -131,6 +142,17 @@ void UInv_InventoryGrid::ClearHoverItem()
 
 	//Show mouse cursor
 	SetMouseCursorWidgetByVisibilityType(EInv_MouseCursorVisibilityType::Visible);
+}
+
+void UInv_InventoryGrid::PutHoverItemBack()
+{
+	if (!IsValid(HoverItem)) return;
+
+	FInv_SlotAvailabilityResult Result = HasRoomForItem(HoverItem->GetInventoryItem(), HoverItem->GetStackCount());
+	Result.Item = HoverItem->GetInventoryItem();
+
+	AddStacks(Result);
+	ClearHoverItem();
 }
 
 bool UInv_InventoryGrid::HasHoverItem() const
@@ -411,12 +433,12 @@ FInv_SlotAvailabilityResult UInv_InventoryGrid::HasRoomForItem(const UInv_ItemCo
 	return HasRoomForItem(ItemComponent->GetItemManifest());
 }
 
-FInv_SlotAvailabilityResult UInv_InventoryGrid::HasRoomForItem(const UInv_InventoryItem* Item)
+FInv_SlotAvailabilityResult UInv_InventoryGrid::HasRoomForItem(const UInv_InventoryItem* Item, const int32 StackAmountOverride)
 {
-	return HasRoomForItem(Item->GetItemManifest());
+	return HasRoomForItem(Item->GetItemManifest(), StackAmountOverride);
 }
 
-FInv_SlotAvailabilityResult UInv_InventoryGrid::HasRoomForItem(const FInv_ItemManifest& ItemManifest)
+FInv_SlotAvailabilityResult UInv_InventoryGrid::HasRoomForItem(const FInv_ItemManifest& ItemManifest, const int32 StackAmountOverride)
 {
 	/*
 	*	Here is a rough breakdown of what we're going to do to determine FInv_SlotAvailabilityResult struct.
@@ -455,6 +477,11 @@ FInv_SlotAvailabilityResult UInv_InventoryGrid::HasRoomForItem(const FInv_ItemMa
 	//Determine how many items to add
 	const int32 MaxStackSize = StackableFragment ? StackableFragment->GetMaxStackSize() : 1;
 	int32 AmountToFill = Result.bStackable ? StackableFragment->GetStackCount() : 1; //amount to fill will get smaller as we allocate space for each amount of item we're trying to add
+
+	if (StackAmountOverride != -1 && Result.bStackable)
+	{
+		AmountToFill = StackAmountOverride;
+	}
 
 	//we can only have unique indices inside a default TSet
 	TSet<int32> CheckedIndices;

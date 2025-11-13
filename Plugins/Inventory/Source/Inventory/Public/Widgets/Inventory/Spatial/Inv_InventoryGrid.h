@@ -34,6 +34,11 @@ public:
 	virtual void NativeTick(const FGeometry& MyGeometry, float DeltaTime) override;
 	//~End UUserWidget Interface
 
+	UFUNCTION()
+	void OnInventoryMenuToggled(bool bToggleInventoryMenu);
+
+	void OnHide();
+
 	bool CursorExitedCanvas(const FVector2D& CanvasPosition, const FVector2D& BoundarySize, const FVector2D& Location);
 	void HighlightSlots(const int32 Index, const FIntPoint& Dimensions);
 	void UnHighlightSlots(const int32 Index, const FIntPoint& Dimensions);
@@ -49,6 +54,8 @@ public:
 	bool HasHoverItem() const;
 	UInv_HoverItem* GetHoverItem() const;
 	void ClearHoverItem();
+
+	void PutHoverItemBack();
 	
 	UInv_ItemDescription* GetOrCreateItemDescription();
 	void SetItemDescriptionSizeAndPosition(UInv_ItemDescription* Description, UCanvasPanel* Canvas) const;
@@ -101,10 +108,10 @@ private:
 	//This function creates grid slots widgets, binds callbacks for on grid slot hover, unhover and click events, places slots widgets inside the array and draws them on screen
 	void ConstructGrid();
 	
-	FInv_SlotAvailabilityResult HasRoomForItem(const UInv_InventoryItem* Item);
+	FInv_SlotAvailabilityResult HasRoomForItem(const UInv_InventoryItem* Item, const int32 StackAmountOverride = -1);
 
 	//Does the heavy lifting
-	FInv_SlotAvailabilityResult HasRoomForItem(const FInv_ItemManifest& ItemManifest);
+	FInv_SlotAvailabilityResult HasRoomForItem(const FInv_ItemManifest& ItemManifest, const int32 StackAmountOverride = -1);
 
 	void AddItemToIndices(const FInv_SlotAvailabilityResult& Result, UInv_InventoryItem* NewItem);
 	void AddItemAtIndex(UInv_InventoryItem* Item, const int32 Index, const bool bStackable, const int32 StackAmount);

@@ -16,6 +16,7 @@ class UInv_InventoryBase;
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FStackChange, FInv_SlotAvailabilityResult&, Result);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FInventoryItemChange, UInv_InventoryItem*, Item);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FNoRoomInInventory);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnInventoryMenuToggled, bool, ToggleInventoryMenu);
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnItemEquipStatusChanged, UInv_InventoryItem*, Item);
 
@@ -65,6 +66,7 @@ public:
 	FInventoryItemChange OnInventoryItemRemoved;
 	FNoRoomInInventory NoRoomInInventory;
 	FStackChange OnStackChange;
+	FOnInventoryMenuToggled OnInventoryMenuToggled;
 
 	FOnItemEquipStatusChanged OnItemEquipped;
 	FOnItemEquipStatusChanged OnItemUnequipped;
@@ -93,4 +95,6 @@ private:
 	bool bInventoryMenuOpen;
 	void OpenInventoryMenu();
 	void CloseInventoryMenu();
+
+	
 };
