@@ -155,6 +155,20 @@ void UInv_InventoryComponent::Server_AddStacksToItem_Implementation(UInv_ItemCom
 	}
 }
 
+void UInv_InventoryComponent::Server_EquipSlotClicked_Implementation(UInv_InventoryItem* ItemToEquip,
+	UInv_InventoryItem* ItemToUnequip)
+{
+	Multicast_EquipSlotClicked(ItemToEquip, ItemToUnequip);
+}
+
+void UInv_InventoryComponent::Multicast_EquipSlotClicked_Implementation(UInv_InventoryItem* ItemToEquip,
+	UInv_InventoryItem* ItemToUnequip)
+{
+	// Equipment component will listen to these delegates
+	OnItemEquipped.Broadcast(ItemToEquip);
+	OnItemUnequipped.Broadcast(ItemToUnequip);
+}
+
 void UInv_InventoryComponent::ToggleInventoryMenu()
 {
 	if (bInventoryMenuOpen)

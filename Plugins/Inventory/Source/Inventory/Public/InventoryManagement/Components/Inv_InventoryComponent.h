@@ -17,6 +17,8 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FStackChange, FInv_SlotAvailabilityR
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FInventoryItemChange, UInv_InventoryItem*, Item);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FNoRoomInInventory);
 
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnItemEquipStatusChanged, UInv_InventoryItem*, Item);
+
 UCLASS(ClassGroup=(Custom), meta=(BlueprintSpawnableComponent), Blueprintable)
 class INVENTORY_API UInv_InventoryComponent : public UActorComponent
 {
@@ -46,6 +48,12 @@ public:
 	UFUNCTION(Server, Reliable) //reliable - guaranteed to hit the server
 	void Server_AddStacksToItem(UInv_ItemComponent* ItemComponent, int32 StackCount, int32 Remainder);
 
+	UFUNCTION(Server, Reliable) //reliable - guaranteed to hit the server
+	void Server_EquipSlotClicked(UInv_InventoryItem* ItemToEquip, UInv_InventoryItem* ItemToUnequip);
+
+	UFUNCTION(NetMulticast, Reliable) //reliable - guaranteed to hit the server
+	void Multicast_EquipSlotClicked(UInv_InventoryItem* ItemToEquip, UInv_InventoryItem* ItemToUnequip);
+
 	void ToggleInventoryMenu();
 	
 	//presents a method to replicate objects on some actor or actor component
@@ -57,6 +65,9 @@ public:
 	FInventoryItemChange OnInventoryItemRemoved;
 	FNoRoomInInventory NoRoomInInventory;
 	FStackChange OnStackChange;
+
+	FOnItemEquipStatusChanged OnItemEquipped;
+	FOnItemEquipStatusChanged OnItemUnequipped;
 	
 protected:
 	// Called when the game starts

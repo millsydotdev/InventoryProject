@@ -28,6 +28,7 @@ public:
 
 	//~Begin UInv_InventoryBase Interface
 	virtual FInv_SlotAvailabilityResult HasRoomForItem(UInv_ItemComponent* ItemComponent) const override;
+	virtual bool HasHoverItem() const override;
 	virtual UInv_HoverItem* GetHoverItem() const override;
 	virtual float GetTileSize() const override;
 	

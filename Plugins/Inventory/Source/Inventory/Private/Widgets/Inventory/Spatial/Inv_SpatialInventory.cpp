@@ -9,6 +9,7 @@
 #include "InventoryManagement/Utils/Inv_InventoryStatics.h"
 #include "Inventory.h"
 #include "Blueprint/WidgetTree.h"
+#include "InventoryManagement/Components/Inv_InventoryComponent.h"
 #include "Items/Inv_InventoryItem.h"
 #include "Widgets/Inventory/GridSlots/Inv_EquippedGridSlot.h"
 #include "Widgets/Inventory/HoverItem/Inv_HoverItem.h"
@@ -49,10 +50,18 @@ void UInv_SpatialInventory::EquippedGridSlotClicked(UInv_EquippedGridSlot* Equip
 	UInv_EquippedSlottedItem* EquippedSlottedItem = EquippedGridSlot->OnItemEquipped(GetHoverItem()->GetInventoryItem(), EquippedTypeTag, GetTileSize());
 	EquippedSlottedItem->OnEquippedSlottedItemClicked.AddDynamic(this, &ThisClass::EquippedSlottedItemClicked);
 
-	//Clear the Hover Item
-
 	//Inform the server that we equipped an item (and unequip item as well)
-	
+	UInv_InventoryComponent* InventoryComponent = UInv_InventoryStatics::GetInventoryComponent(GetOwningPlayer());
+	check(IsValid(InventoryComponent));
+
+	InventoryComponent->Server_EquipSlotClicked(GetHoverItem()->GetInventoryItem(), nullptr);
+	if (GetOwningPlayer()->GetNetMode() != NM_DedicatedServer)
+	{
+		InventoryComponent->OnItemEquipped.Broadcast(GetHoverItem()->GetInventoryItem());
+	}
+
+	//Clear the Hover Item
+	Grid_Equippables->ClearHoverItem();
 }
 
 void UInv_SpatialInventory::EquippedSlottedItemClicked(UInv_EquippedSlottedItem* EquippedSlottedItem)
@@ -79,6 +88,11 @@ FInv_SlotAvailabilityResult UInv_SpatialInventory::HasRoomForItem(UInv_ItemCompo
 		UE_LOG(LogInventory, Error, TEXT("Item Component doesn't have a valid Item Category."));
 		return FInv_SlotAvailabilityResult();
 	}
+}
+
+bool UInv_SpatialInventory::HasHoverItem() const
+{
+	return Grid_Equippables->HasHoverItem();
 }
 
 UInv_HoverItem* UInv_SpatialInventory::GetHoverItem() const

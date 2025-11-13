@@ -48,6 +48,8 @@ public:
 
 	bool HasHoverItem() const;
 	UInv_HoverItem* GetHoverItem() const;
+	void ClearHoverItem();
+	
 	UInv_ItemDescription* GetOrCreateItemDescription();
 	void SetItemDescriptionSizeAndPosition(UInv_ItemDescription* Description, UCanvasPanel* Canvas) const;
 	
@@ -190,7 +192,6 @@ private:
 	void PickUp(UInv_InventoryItem* ClickedInventoryItem, const int32 GridIndex);
 	void AssignHoverItem(UInv_InventoryItem* InventoryItem);
 	void AssignHoverItem(UInv_InventoryItem* InventoryItem, const int32 GridIndex, const int32 PreviousGridIndex);
-	void ClearHoverItem();
 	void RemoveItemFromGrid(UInv_InventoryItem* InventoryItem, const int32 GridIndex);
 	
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"), Category = "Inventory")

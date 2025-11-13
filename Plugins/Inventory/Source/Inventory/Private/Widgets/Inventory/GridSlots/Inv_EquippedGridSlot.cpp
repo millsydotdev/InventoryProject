@@ -93,7 +93,7 @@ UInv_EquippedSlottedItem* UInv_EquippedGridSlot::OnItemEquipped(UInv_InventoryIt
 	
 	// Calc the draw size for equipped slotted item
 	const FIntPoint GridDimensions = GridFragment->GetGridSize();
-	const float IconTileWidth = GridFragment->GetGridPadding() * 2;
+	const float IconTileWidth = TileSize - GridFragment->GetGridPadding() * 2;
 	const FVector2D DrawSize = GridDimensions * IconTileWidth;
 	IconBrush.ImageSize = DrawSize;
 	
