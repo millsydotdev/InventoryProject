@@ -52,9 +52,20 @@ void UInv_SpatialInventory::EquippedGridSlotClicked(UInv_EquippedGridSlot* Equip
 
 	//Create equipped slotted item and add it to the equipped grid slot (call EquippedGridSlot->OnItemEquipped())
 	UInv_EquippedSlottedItem* EquippedSlottedItem = EquippedGridSlot->OnItemEquipped(GetHoverItem()->GetInventoryItem(), EquippedTypeTag, GetTileSize());
-	EquippedSlottedItem->OnEquippedSlottedItemClicked.AddDynamic(this, &ThisClass::EquippedSlottedItemClicked);
-	EquippedSlottedItem->OnSlottedItemHovered.AddDynamic(this, &ThisClass::OnSlottedItemHovered);
-	EquippedSlottedItem->OnSlottedItemUnhovered.AddDynamic(this, &ThisClass::OnSlottedItemUnhovered);
+	if (!EquippedSlottedItem->OnEquippedSlottedItemClicked.IsAlreadyBound(this, &ThisClass::EquippedSlottedItemClicked))
+	{
+		EquippedSlottedItem->OnEquippedSlottedItemClicked.AddDynamic(this, &ThisClass::EquippedSlottedItemClicked);
+	}
+	//Bind Item Equipped
+	if (!EquippedSlottedItem->OnSlottedItemHovered.IsAlreadyBound(this, &ThisClass::OnSlottedItemHovered))
+	{
+		EquippedSlottedItem->OnSlottedItemHovered.AddDynamic(this,&ThisClass::OnSlottedItemHovered);
+	}
+	//Bind Item Unequipped
+	if (!EquippedSlottedItem->OnSlottedItemUnhovered.IsAlreadyBound(this, &ThisClass::OnSlottedItemUnhovered))
+	{
+		EquippedSlottedItem->OnSlottedItemUnhovered.AddDynamic(this, &ThisClass::OnSlottedItemUnhovered);
+	}
 
 	//Inform the server that we equipped an item (and unequip item as well)
 	UInv_InventoryComponent* InventoryComponent = UInv_InventoryStatics::GetInventoryComponent(GetOwningPlayer());
@@ -331,9 +342,22 @@ void UInv_SpatialInventory::MakeEquippedSlottedItem(UInv_EquippedSlottedItem* Eq
 
 	if (IsValid(SlottedItem))
 	{
-		SlottedItem->OnEquippedSlottedItemClicked.AddDynamic(this, &ThisClass::EquippedSlottedItemClicked);
-		SlottedItem->OnSlottedItemHovered.AddDynamic(this, &ThisClass::OnSlottedItemHovered);
-		SlottedItem->OnSlottedItemUnhovered.AddDynamic(this, &ThisClass::OnSlottedItemUnhovered);
+		if (!SlottedItem->OnEquippedSlottedItemClicked.IsAlreadyBound(this, &ThisClass::EquippedSlottedItemClicked))
+		{
+			SlottedItem->OnEquippedSlottedItemClicked.AddDynamic(this, &ThisClass::EquippedSlottedItemClicked);
+		}
+		
+		//Bind Item Equipped
+		if (!SlottedItem->OnSlottedItemHovered.IsAlreadyBound(this, &ThisClass::OnSlottedItemHovered))
+		{
+			SlottedItem->OnSlottedItemHovered.AddDynamic(this,&ThisClass::OnSlottedItemHovered);
+		}
+
+		//Bind Item Unequipped
+		if (!SlottedItem->OnSlottedItemUnhovered.IsAlreadyBound(this, &ThisClass::OnSlottedItemUnhovered))
+		{
+			SlottedItem->OnSlottedItemUnhovered.AddDynamic(this, &ThisClass::OnSlottedItemUnhovered);
+		}
 	}
 }
 

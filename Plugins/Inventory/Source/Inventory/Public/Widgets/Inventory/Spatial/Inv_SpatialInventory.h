@@ -100,9 +100,12 @@ private:
 	UFUNCTION()
 	void ShowConsumables();
 
+	//Called if we click on equipped GRID SLOT (if equipped grid slot doesn't contain an item).
+	//Clicked either emptyhanded or with hover item, but do something only if clicked with hover item
 	UFUNCTION()
 	void EquippedGridSlotClicked(UInv_EquippedGridSlot* EquippedGridSlot, const FGameplayTag& EquippedTypeTag);
 
+	//Called if we click on equipped slotted ITEM (if equipped grid slot contains an item). Clicked either emptyhanded or with hover item
 	UFUNCTION()
 	void EquippedSlottedItemClicked(UInv_EquippedSlottedItem* EquippedSlottedItem);
 

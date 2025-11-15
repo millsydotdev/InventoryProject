@@ -6,6 +6,7 @@
 #include "StructUtils/InstancedStruct.h"
 #include "Inv_ItemFragment.generated.h"
 
+class AInv_EquipActor;
 class UInv_CompositeBase;
 class APlayerController;
 
@@ -319,8 +320,16 @@ public:
 	//default constructor for this fragment (NOT setting up tag here, done in bp)
 	FInv_EquipmentFragment() {}
 
+	//Called first
 	void OnEquip(APlayerController* PC);
 	void OnUnequip(APlayerController* PC);
+
+	AInv_EquipActor* SpawnAttachedActor(USkeletalMeshComponent* AttachMesh) const;
+	void DestroyAttachedActor() const;
+
+	//~Begin FInv_ItemFragment Interface
+	virtual void Manifest() override;
+	//~End FInv_ItemFragment Interface
 
 	//~Begin FInv_InventoryItemFragment Interface
 	virtual void Assimilate(UInv_CompositeBase* Composite) const override;
@@ -330,6 +339,14 @@ private:
 	//subfragments for all the types of additional equip effects
 	UPROPERTY(EditAnywhere, Category = "Inventory", meta = (ExcludeBaseStruct))
 	TArray<TInstancedStruct<FInv_EquipModifierFragment>> EquipModifiers;
+
+	UPROPERTY(EditAnywhere, Category = "Inventory")
+	TSubclassOf<AInv_EquipActor> EquipActorClass = nullptr;
+
+	TWeakObjectPtr<AInv_EquipActor> EquippedActor = nullptr;
+
+	UPROPERTY(EditAnywhere, Category = "Inventory")
+	FName SocketAttachPoint = NAME_None;
 
 	bool bEquipped = false;
 };
