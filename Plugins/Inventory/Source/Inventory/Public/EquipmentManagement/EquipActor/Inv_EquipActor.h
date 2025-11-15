@@ -21,7 +21,7 @@ public:
 	void SetEquipmentType(FGameplayTag InEquipmentType) { EquipmentType = InEquipmentType; };
 
 private:
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Inventory")
+	UPROPERTY(EditAnywhere, Category = "Inventory")
 	FGameplayTag EquipmentType;
 
 };

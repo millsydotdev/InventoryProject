@@ -3,6 +3,7 @@
 
 #include "EquipmentManagement/Components/Inv_EquipmentComponent.h"
 
+#include "EquipmentManagement/EquipActor/Inv_EquipActor.h"
 #include "GameFramework/Character.h"
 #include "GameFramework/PlayerController.h"
 #include "InventoryManagement/Components/Inv_InventoryComponent.h"
@@ -40,6 +41,11 @@ void UInv_EquipmentComponent::OnItemEquipped(UInv_InventoryItem* EquippedItem)
 	if (!EquipmentFragment) return;
 
 	EquipmentFragment->OnEquip(OwningPlayerController.Get());
+	
+	if (!OwningSkeletalMesh.IsValid()) return;
+	AInv_EquipActor* SpawnedEquipActor = SpawnEquipActor(EquipmentFragment, ItemManifest, OwningSkeletalMesh.Get());
+
+	EquippedActors.Add(SpawnedEquipActor);
 }
 
 void UInv_EquipmentComponent::OnItemUnequipped(UInv_InventoryItem* UnequippedItem)
@@ -54,6 +60,17 @@ void UInv_EquipmentComponent::OnItemUnequipped(UInv_InventoryItem* UnequippedIte
 	if (!EquipmentFragment) return;
 
 	EquipmentFragment->OnUnequip(OwningPlayerController.Get());
+}
+
+AInv_EquipActor* UInv_EquipmentComponent::SpawnEquipActor(FInv_EquipmentFragment* EquipmentFragment,
+	const FInv_ItemManifest& Manifest, USkeletalMeshComponent* AttachMesh)
+{
+	AInv_EquipActor* SpawnedEquipActor = EquipmentFragment->SpawnAttachedActor(AttachMesh);
+	SpawnedEquipActor->SetEquipmentType(EquipmentFragment->GetEquipmentType());
+	SpawnedEquipActor->SetOwner(GetOwner());
+	EquipmentFragment->SetEquippedActor(SpawnedEquipActor);
+
+	return SpawnedEquipActor;
 }
 
 void UInv_EquipmentComponent::InitInventoryComponent()

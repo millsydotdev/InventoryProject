@@ -324,8 +324,12 @@ public:
 	void OnEquip(APlayerController* PC);
 	void OnUnequip(APlayerController* PC);
 
+	//Called in equipment component
 	AInv_EquipActor* SpawnAttachedActor(USkeletalMeshComponent* AttachMesh) const;
 	void DestroyAttachedActor() const;
+
+	FGameplayTag GetEquipmentType() const { return EquipmentType; }
+	void SetEquippedActor(AInv_EquipActor* EquipActor);
 
 	//~Begin FInv_ItemFragment Interface
 	virtual void Manifest() override;
@@ -347,6 +351,9 @@ private:
 
 	UPROPERTY(EditAnywhere, Category = "Inventory")
 	FName SocketAttachPoint = NAME_None;
+
+	UPROPERTY(EditAnywhere, Category = "Inventory")
+	FGameplayTag EquipmentType = FGameplayTag::EmptyTag;
 
 	bool bEquipped = false;
 };

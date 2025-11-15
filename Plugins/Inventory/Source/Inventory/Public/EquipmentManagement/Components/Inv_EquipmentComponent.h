@@ -6,6 +6,9 @@
 #include "Components/ActorComponent.h"
 #include "Inv_EquipmentComponent.generated.h"
 
+struct FInv_EquipmentFragment;
+struct FInv_ItemManifest;
+class AInv_EquipActor;
 class UInv_InventoryItem;
 class UInv_InventoryComponent;
 class APlayerController;
@@ -28,11 +31,16 @@ protected:
 	virtual void BeginPlay() override;
 
 private:
+	//called in OnBeginPlay
+	void InitInventoryComponent();
+	
 	TWeakObjectPtr<APlayerController> OwningPlayerController;
 
 	TWeakObjectPtr<USkeletalMeshComponent> OwningSkeletalMesh;
 	
 	TWeakObjectPtr<UInv_InventoryComponent> InventoryComponent;
+
+	TArray<TObjectPtr<AInv_EquipActor>> EquippedActors;
 	
 	UFUNCTION()
 	void OnItemEquipped(UInv_InventoryItem* EquippedItem);
@@ -40,6 +48,8 @@ private:
 	UFUNCTION()
 	void OnItemUnequipped(UInv_InventoryItem* UnequippedItem);
 
-	//called in OnBeginPlay
-	void InitInventoryComponent();
+	AInv_EquipActor* SpawnEquipActor(FInv_EquipmentFragment* EquipmentFragment, const FInv_ItemManifest& Manifest, USkeletalMeshComponent* AttachMesh);
+	
+	
+	
 };
